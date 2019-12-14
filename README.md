@@ -1,13 +1,33 @@
 # How to access your data
 
+
+Note: You'll need python3 and the following packages for this to work
+
+* pandas
+* json
+* requests
+* urllib.request
+* sys
+* collections
+* datetime
+* os
+* itertools
+* matplotlib
+* numpy
+* random
+* folium
+* seaborn
+* plotly
+
+
 ## Apply for access
 1. Go [here](https://untappd.com/api/dashboard) to request access from Untappd
 2. I chose Personal App but you should choose whatever you need it for
 3. You need the
-  * Application name
-  * Support URL (I put my personal website but it doesn't really matter unless you are trying to access the API for a website)
-  * Callback URL (I just used a random word)
-  * Description
+    * Application name
+    * Support URL (I put my personal website but it doesn't really matter unless you are trying to access the API for a website)
+    * Callback URL (I just used a random word)
+    * Description
 4. Once accepted, you should have a Client ID and a Client Secret.
 
 ## Find Access Token 
@@ -31,5 +51,3 @@
  ```
 2. The `graphs/` directory should contain all of images. 
 
-
-Note: You'll need python3 and various packages to collect and analyze the data. Make sure to have them installed or the scripts won't work. 
