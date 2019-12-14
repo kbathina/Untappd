@@ -36,7 +36,7 @@ Note: You'll need python3 and the following packages for this to work
 
 # Collecting Data
 
-1. Create a txt file called `user_information.txt`. The file should look like this:
+1. Create a txt file called `user_information.txt`. The file should look like this where ############ is replaced by your information 
 ```
 username      = ############
 client_id     = ############
