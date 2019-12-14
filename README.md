@@ -36,7 +36,14 @@ Note: You'll need python3 and the following packages for this to work
 
 # Collecting Data
 
-1. Open `user_information.txt` and fill in the user, client_id, client_secret, and the access_token.
+1. Create a txt file called `user_information.txt`. The file should look like this:
+```
+username      = ############
+client_id     = ############
+client_secret = ############
+access_token  = ############
+```
+
 2. Run the python file `Untappd_Data.py`. If you are going to run it in the terminal, type 
 ```python
  python Untappd_Data.py 
