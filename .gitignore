@@ -43,3 +43,4 @@ user_information.txt
 index_error.txt
 /data/*
 /graphs/*
+.gitignore~
