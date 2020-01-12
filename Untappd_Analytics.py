@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+### next steps - clean up code
+
 import warnings
 warnings.filterwarnings("ignore")
 
