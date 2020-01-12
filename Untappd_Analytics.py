@@ -113,8 +113,8 @@ def read_data():
         date_badges[name] = sorted([datetime.strptime(x, '%a, %d %b %Y %H:%M:%S %z') for x in level_date])
     
     del level_badges['Land of the Free ']
-    del level_badges['I Believe in IPA! ']
-    del level_badges['New Brew Thursday ']
+    del level_badges['I Believe in IPA!']
+    del level_badges['New Brew Thursday']
 
     return beers, date_badges, level_badges, single_badges, brewery_locations, venue_locations, badge_urls
 
