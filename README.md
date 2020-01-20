@@ -58,3 +58,5 @@ access_token  = ############
  ```
 2. The `graphs/` directory should contain all of images. 
 
+
+# If you have any new ideas for graphs/analysis, leave a request in the Issues tab and I'll get to it. 
