@@ -32,7 +32,9 @@ Note: You'll need python3 and the following packages for this to work
 
 ## Find Access Token 
 1. Fill in the following link with your information replaced (CLIENTID, CALLBACKURL) https://untappd.com/oauth/authenticate/?client_id=CLIENTID&response_type=code&redirect_url=CALLBACKURL and go to the website.
-2. The url in the browser should have changed to https://untappd.com/oauth/authenticate/personal?code=###################. The ################### is your access token. Make sure to save this also. 
+2. The url in the browser should have changed to https://untappd.com/oauth/authenticate/personal?code=###################. The ################### is your code. Make sure to save this also. 
+3. Fill in the following link with your information replaced (CLIENTID, CLIENTSECRET,CALLBACKURL,CODE) https://untappd.com/oauth/authorize/?client_id=CLIENTID&client_secret=CLIENTSECRET&response_type=code&redirect_url=CALLBACKURL&code=CODE
+4. You should be sent to a page with your access_token
 
 # Collecting Data
 
