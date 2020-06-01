@@ -18,6 +18,7 @@ Note: You'll need python3 and the following packages for this to work
 * folium
 * seaborn
 * plotly
+* orca
 
 
 ## Apply for access

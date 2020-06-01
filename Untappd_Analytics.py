@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-### next steps - clean up code
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -149,7 +147,7 @@ def read_unique_beer_data():
     unique['day'] = unique.index.day
     unique['month'] = unique.index.month
     unique['year'] = unique.index.year
-    unique['day_of_week'] = unique.index.to_series().dt.weekday_name.values
+    unique['day_of_week'] = unique.index.to_series().dt.day_name()
 
     return unique
 
@@ -196,18 +194,21 @@ def style_frequency(beers):
     '''
     style frequency 
     '''
-    fig, ax = plt.subplots(figsize = (8,8))
+    fig, ax = plt.subplots(figsize = (8,20))
 
-    # group data by style, count occurence, sort by occurence and show top 15
-    occurence = pd.DataFrame(beers.groupby('style').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)[0:15]
+    # group data by style, count occurence, sort by occurence
+    occurence = pd.DataFrame(beers.groupby('style').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)
+    # keep all styles with more than 5 occurences
+    occurence = occurence[occurence['Frequency'] > 5]
     # plot
     sns.barplot(x='Frequency', y=occurence.index, palette="rocket", ax=ax, data = occurence)
     
     ax.set_ylabel('Frequency');
     ax.set_ylabel('Beer Style');
-    ax.set_title('Most Drunk Styles')
+    ax.set_title('Most Drunk Styles (>5)')
 
     plt.tight_layout()
+    
     plt.savefig(SAVE + 'Style_frequency.png', dpi = 300)
 
 def ABV_frequency(beers):
@@ -276,13 +277,17 @@ def badges_per_checkin(beers):
     # group number of badges per checkin and count the number of occurences
     # store as a zipped list
     zipped = list(beers.groupby('number_badges').size().iteritems())
-    # randomly shuffle the list so that the pie chart changes order each time
-    random.shuffle(zipped)
+    # sort list into readable order
+    m = range(len(zipped))
+    t = list(zip(m[0:], m[::-1]))
+    t = [x for y in t for x in y]
+    sorted_zipped = [zipped[i] for i in t[:len(t)//2]]
+
     # save number of badges as labels and occurence as size
-    labels,sizes = map(list, zip(*zipped))
+    labels,sizes = map(list, zip(*sorted_zipped))
 
     # print pie chart
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, pctdistance = 0.8, labeldistance = 0.5)
+    pie = ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, pctdistance = 0.45, labeldistance = 1.05)
     #draw circle
     centre_circle = plt.Circle((0,0),0.60,fc='white')
     fig = plt.gcf()
@@ -500,7 +505,7 @@ def brewery_popup(brewery_locations, beers):
     # add popup to map
     for name,loc in brewery_locations.items():
         prop = name + '<br>' + str(frequency[name]) + ' checkins <br>First check in: ' + str(beers[beers.brewery_name == name]['date_GMT'].min().date()) + '<br>Last check in: ' + str(beers[beers.brewery_name == name]['date_GMT'].max().date())
-        folium.Circle([loc[0],loc[1]], radius = frequency[name] * 10000, fill=True, color = 'crimson', fill_color = 'crimson').add_child(folium.Popup(prop, min_width=200, max_width=500)).add_to(m)
+        folium.Marker([loc[0],loc[1]], color = 'crimson', fill_color = 'crimson').add_child(folium.Popup(prop, min_width=200, max_width=500)).add_to(m)
 
     m.save(outfile= SAVE + "brewery_popup_map.html")
 
@@ -563,7 +568,7 @@ def venue_popup(venue_locations, beers):
     # add popup to map
     for name,loc in venue_locations.items():
         prop = name + '<br>' + str(frequency[name]) + ' checkins <br>First check in: ' + str(beers[beers.venue_name == name]['date_GMT'].min().date()) + '<br>Last check in: ' + str(beers[beers.venue_name == name]['date_GMT'].max().date())
-        folium.Circle([loc[0],loc[1]], radius = frequency[name] * 1000, fill=True, color = 'crimson', fill_color = 'crimson').add_child(folium.Popup(prop, min_width=200, max_width=500)).add_to(m)
+        folium.Marker([loc[0],loc[1]], color = 'crimson', fill_color = 'crimson').add_child(folium.Popup(prop, min_width=200, max_width=500)).add_to(m)
 
     m.save(outfile= SAVE + "venue_popup_map.html")
 

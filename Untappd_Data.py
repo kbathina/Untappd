@@ -4,6 +4,7 @@ import urllib.request as url
 import os.path
 import os
 import sys
+from datetime import datetime
 
 if not os.path.exists('data/'):
     os.mkdir('data/')
@@ -12,74 +13,120 @@ if not os.path.exists('data/'):
 with open('user_information.txt','r') as f:
     data = [x.strip() for x in f.readlines()]
     
-username     = data[0].split('= ')[1]
-client_id    = data[1].split('= ')[1]
-client_secret= data[2].split('= ')[1]
+username = data[0].split('= ')[1]
+client_id  = data[1].split('= ')[1]
+client_secret = data[2].split('= ')[1]
 access_token = data[3].split('= ')[1]
 
-######## full data
 
-user = requests.get("https://api.untappd.com/v4/user/info/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
-user_data = user.json()
-total_checkins = user_data["response"]["user"]["stats"]["total_checkins"]
 
-print("Total Checkins = " + str(total_checkins))
+def get_main_data():
+    '''
+    download full data
+    '''
+    with open('data/untappd_checkins.json') as json_file: # read in data from untappd api
+        current_data = json.load(json_file)
 
-checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token)
+    current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
 
-checkins_data = checkins.json()
-full_data = checkins_data["response"]["checkins"]["items"]
+    # user = requests.get("https://api.untappd.com/v4/user/info/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
+    # user_data = user.json()
+    # total_checkins = user_data["response"]["user"]["stats"]["total_checkins"]
+    # print("Total Checkins = " + str(total_checkins))
 
-while (len(full_data) < total_checkins):
-    max_id   = checkins_data["response"]["pagination"]["max_id"]
-    next_url = "https://api.untappd.com/v4/user/checkins/?max_id=" + str(max_id) + "&access_token="+access_token
-    print(str(len(full_data)) + '/' + str(total_checkins))
-    checkins = requests.get(next_url)
+    checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token)
+
+    append_data = []
     checkins_data = checkins.json()
-    full_data.extend(checkins_data["response"]["checkins"]["items"])
+    for checkin in checkins_data["response"]["checkins"]["items"]:
+        new_time = datetime.strptime(checkin['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+        if new_time > current_time:
+            append_data.append(checkin)
 
-with open("data/untappd_checkins.json", "w") as f:
-    json.dump(full_data, f)
+    while new_time > current_time:
+        max_id   = checkins_data["response"]["pagination"]["max_id"]
+        next_url = "https://api.untappd.com/v4/user/checkins/?max_id=" + str(max_id) + "&access_token="+access_token
+        checkins = requests.get(next_url)
+        checkins_data = checkins.json()
+        for checkin in checkins_data["response"]["checkins"]["items"]:
+            new_time = datetime.strptime(checkin['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+            if new_time > current_time:
+                append_data.append(checkin)
+            else:
+                break
 
-########## unique data
+    append_data.extend(current_data)
+    with open("data/untappd_checkins.json", "w") as f:
+        json.dump(append_data, f)
 
-user = requests.get("https://api.untappd.com/v4/user/beers/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
-checkins_data = user.json()
-total_checkins = checkins_data["response"]['total_count']
+    return current_data
 
-print("Total Distinct Checkins = " + str(total_checkins))
+def get_unique_data():
+    '''
+    get unique data
+    '''
+    user = requests.get("https://api.untappd.com/v4/user/beers/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
+    checkins_data = user.json()
+    # total_checkins = checkins_data["response"]['total_count']
 
-# checkins = requests.get("https://api.untappd.com/v4/user/beers/?access_token="+access_token)
+    # print("Total Distinct Checkins = " + str(total_checkins))
 
-full_data = checkins_data["response"]['beers']['items']
+    with open('data/untappd_unique_beer.json') as json_file: # read in data from untappd api
+        current_data = json.load(json_file)
 
-total = 25
-while (total < total_checkins):
-    max_id   = checkins_data["response"]["pagination"]["max_id"]
-    next_url = 'https://api.untappd.com/v4/user/beers/' + username+'?offset=' + str(total) + '&client_id='+client_id+"&client_secret="+client_secret
-    print(str(total) + '/' + str(total_checkins))
-    checkins = requests.get(next_url)
-    checkins_data = checkins.json()
-    full_data.extend(checkins_data["response"]["beers"]['items'])
-    total += 25
+    current_time = datetime.strptime(current_data[0]['first_created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
 
-with open("data/untappd_unique_beer.json", "w") as f:
-    json.dump(full_data, f)
+    append_data = []
+    total = 25
+    new_time = datetime.strptime(checkins_data["response"]["beers"]["items"][0]['first_created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+    while new_time > current_time:
+        max_id   = checkins_data["response"]["pagination"]["max_id"]
+        next_url = 'https://api.untappd.com/v4/user/beers/' + username+'?offset=' + str(total) + '&client_id='+client_id+"&client_secret="+client_secret
+        checkins = requests.get(next_url)
+        checkins_data = checkins.json()
+        for checkin in checkins_data["response"]["beers"]["items"]:
+            new_time = datetime.strptime(checkin['first_created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+            if new_time > current_time:
+                append_data.append(checkin)
+            else:
+                break
+        total += 25
 
-########## updating badges
-print('Checking for new badges')
+    append_data.extend(current_data)
+    with open("data/untappd_unique_beer.json", "w") as f:
+        json.dump(append_data, f)
 
-with open('data/untappd_checkins.json') as json_file: # read in data from untappd api
-    data = json.load(json_file)[::-1]
+def update_bages(current_data):
+    '''
+    updating badges
+    '''
+    with open('data/untappd_checkins.json') as json_file: # read in data from untappd api
+        data = json.load(json_file)[::-1]
 
-for d in data:
-    if d['badges']['count'] > 0:
-        for badge in d['badges']['items']:
-            name = badge['badge_image']['lg']
-            if not os.path.isfile( "data/badge_images/"+name.split('/')[-1]):
-                try:
-                    url.urlretrieve(name, "data/badge_images/"+name.split('/')[-1])
-                except: 
-                    pass
+    for d in data:
+        if d['badges']['count'] > 0:
+            for badge in d['badges']['items']:
+                name = badge['badge_image']['lg']
+                if not os.path.isfile( "data/badge_images/"+name.split('/')[-1]):
+                    try:
+                        url.urlretrieve(name, "data/badge_images/"+name.split('/')[-1])
+                    except: 
+                        pass
 
-    
+if __name__ == '__main__':
+
+    if not os.path.exists('data/untappd_checkins.json'):
+        current_data = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token).json()["response"]["checkins"]["items"]
+        with open("data/untappd_checkins.json", "w") as f:
+            json.dump(current_data, f)
+    else: 
+        current_data = get_main_data()
+
+    update_bages(current_data)
+
+    if not os.path.exists('data/untappd_unique_beer.json'):
+        unique_data = requests.get("https://api.untappd.com/v4/user/beers/"+username+"?client_id="+client_id+"&client_secret="+client_secret).json()["response"]["beers"]["items"]
+        with open("data/untappd_unique_beer.json", "w") as f:
+            json.dump(unique_data, f)
+    else: 
+        get_unique_data()
