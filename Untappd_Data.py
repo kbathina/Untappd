@@ -4,7 +4,7 @@ import urllib.request as url
 import os.path
 import os
 import sys
-from datetime import datetime
+from datetime import datetime,timedelta
 
 if not os.path.exists('data/'):
     os.mkdir('data/')
@@ -27,12 +27,7 @@ def get_main_data():
     with open('data/untappd_checkins.json') as json_file: # read in data from untappd api
         current_data = json.load(json_file)
 
-    current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
-
-    # user = requests.get("https://api.untappd.com/v4/user/info/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
-    # user_data = user.json()
-    # total_checkins = user_data["response"]["user"]["stats"]["total_checkins"]
-    # print("Total Checkins = " + str(total_checkins))
+    current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)\
 
     checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token)
 
@@ -65,22 +60,15 @@ def get_unique_data():
     '''
     get unique data
     '''
-    user = requests.get("https://api.untappd.com/v4/user/beers/"+username+"?client_id="+client_id+"&client_secret="+client_secret)
-    checkins_data = user.json()
-    # total_checkins = checkins_data["response"]['total_count']
-
-    # print("Total Distinct Checkins = " + str(total_checkins))
-
     with open('data/untappd_unique_beer.json') as json_file: # read in data from untappd api
         current_data = json.load(json_file)
 
     current_time = datetime.strptime(current_data[0]['first_created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+    new_time = current_time + timedelta(1)
 
     append_data = []
-    total = 25
-    new_time = datetime.strptime(checkins_data["response"]["beers"]["items"][0]['first_created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
+    total = 0
     while new_time > current_time:
-        max_id   = checkins_data["response"]["pagination"]["max_id"]
         next_url = 'https://api.untappd.com/v4/user/beers/' + username+'?offset=' + str(total) + '&client_id='+client_id+"&client_secret="+client_secret
         checkins = requests.get(next_url)
         checkins_data = checkins.json()

@@ -600,14 +600,14 @@ def brewery_state(beers):
 
     fig = go.Figure(data=go.Choropleth(
         locations=states.index, # Spatial coordinates
-        z = states['Frequency'].astype(float), # Data to be color-coded
+        z = np.log(states['Frequency'].astype(float)), # Data to be color-coded
         locationmode = 'USA-states', # set of locations match entries in `locations`
         colorscale = 'Blues',
         colorbar_title = "Frequency",
     ))
 
     fig.update_layout(
-        title_text = 'Brewery State Frequency',
+        title_text = 'Brewery State Frequency (log)',
         geo_scope='usa',
         autosize=False,
         width=1000,
@@ -629,7 +629,7 @@ def brewery_country(beers):
     ))
 
     fig.update_layout(
-        title_text = 'Brewery Country Frequency',
+        title_text = 'Brewery Country Frequency (log)',
         geo_scope='world',
         autosize=False,
         width=1000,
@@ -637,25 +637,6 @@ def brewery_country(beers):
     )
 
     fig.write_image("graphs/brewery_country.png")
-
-def IBU_Unique_frequency(unique):
-    '''
-    Unique IBU frequency 
-    '''
-    fig, ax = plt.subplots(figsize = (6,6))
-
-    # get abvs
-    ibu = unique['ibu']
-
-    # plot histogram    
-    sns.distplot(a= ibu, ax=ax, kde=False)
-    
-    ax.set_xlabel('IBU')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Unique IBU Histogram');
-
-    plt.tight_layout()
-    plt.savefig(SAVE + 'Unique_IBU_frequency.png', dpi = 300)
 
 def cumulative(beers,unique):
     '''
@@ -909,7 +890,6 @@ if __name__ == '__main__':
     venue_heatmap(venue_locations)
     venue_popup(venue_locations, beers)
     brewery_rating(beers)
-    IBU_Unique_frequency(unique)
     cumulative(beers, unique)
     ave_unique_counts(unique)
     ave_unique_rating(unique)
