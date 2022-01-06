@@ -84,6 +84,30 @@ def get_updated_data():
 
     return current_data
 
+def get_unique_data_first():
+    '''
+    get unique data
+    '''
+
+    user = requests.get("https://api.untappd.com/v4/user/info/{}?client_id={}&client_secret={}".format(username,client_id,client_secret)) 
+    user_data = user.json()
+    total_checkins = user_data["response"]["user"]["stats"]["total_beers"]
+    print("Total Unique Checkins = {}".format(total_checkins))
+
+    unique_data = requests.get("https://api.untappd.com/v4/user/beers/{}?client_id={}&client_secret={}".format(username,client_id,client_secret)).json()
+    append_data = unique_data["response"]["beers"]["items"]
+    
+    while (len(append_data) < total_checkins):
+        offset = unique_data["response"]['pagination']['offset']
+        next_url = 'https://api.untappd.com/v4/user/beers/{}?offset={}&client_id={}&client_secret={}'.format(username, offset,client_id,client_secret)
+        print("Downloading {} of {}".format(len(append_data),total_checkins))
+        unique_data = requests.get(next_url).json()
+        append_data.extend(unique_data["response"]["beers"]["items"])
+        
+
+    with open("data/untappd_unique_beer.json", "w") as f:
+        json.dump(append_data, f)
+        
 def get_unique_data():
     '''
     get unique data
@@ -112,7 +136,7 @@ def get_unique_data():
     with open("data/untappd_unique_beer.json", "w") as f:
         json.dump(append_data, f)
 
-def update_bages(current_data):
+def update_badges(current_data):
     '''
     updating badges
     '''
@@ -131,16 +155,14 @@ def update_bages(current_data):
 
 if __name__ == '__main__':
 
-    if not os.path.exists('data/untappd_checkins.json'):
-        current_data = get_first_data()
-    else: 
+    if os.path.exists('data/untappd_checkins.json'):
         current_data = get_updated_data()
+    else: 
+        current_data = get_first_data()
 
     update_bages(current_data)
 
-    if not os.path.exists('data/untappd_unique_beer.json'):
-        unique_data = requests.get("https://api.untappd.com/v4/user/beers/"+username+"?client_id="+client_id+"&client_secret="+client_secret).json()["response"]["beers"]["items"]
-        with open("data/untappd_unique_beer.json", "w") as f:
-            json.dump(unique_data, f)
-    else: 
+    if os.path.exists('data/untappd_unique_beer.json'):
         get_unique_data()
+    else: 
+        get_unique_data_first()
