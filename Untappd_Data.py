@@ -160,7 +160,7 @@ if __name__ == '__main__':
     else: 
         current_data = get_first_data()
 
-    update_bages(current_data)
+    update_badges(current_data)
 
     if os.path.exists('data/untappd_unique_beer.json'):
         get_unique_data()
