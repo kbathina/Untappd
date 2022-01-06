@@ -38,7 +38,11 @@ def get_main_data():
         if new_time > current_time:
             append_data.append(checkin)
 
+    
+    count = 0
     while new_time > current_time:
+        count += 1
+        if count % 10 == 0: print(str(count) + ' checkins')
         max_id   = checkins_data["response"]["pagination"]["max_id"]
         next_url = "https://api.untappd.com/v4/user/checkins/?max_id=" + str(max_id) + "&access_token="+access_token
         checkins = requests.get(next_url)

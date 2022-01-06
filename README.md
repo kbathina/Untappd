@@ -56,7 +56,8 @@ access_token  = ############
 ```python
  python Untappd_Data.py 
  ```
- 3. The data should now all be downloaded into the `data/` directory that was created
+
+3.  Because of the rate limit imposed by the Untappd API, the script could take a long time if you have thousands of checkins. Each subsequent run only downloads new checkins so it should be quick depending on how often you run this. The data should now all be downloaded into the `data/` directory that was created.
 
 
 # Analyzing Data
@@ -66,5 +67,9 @@ access_token  = ############
  ```
 2. The `graphs/` directory should contain all of images. 
 
+# Updating Data and Visualizations
+## Run these scripts every time you want to update your information. Make sure to do it often if you don't want to get hit by the rate limit. 
+1. Run the python file `Untappd_Data.py`.
+2. Run the python file `Untappd_Analytics.py`.
 
 # If you have any new ideas for graphs/analysis, leave a request in the Issues tab and I'll get to it. 

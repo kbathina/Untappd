@@ -165,8 +165,8 @@ def most_drunk_beers(beers):
     # plot
     sns.barplot(x='beer', y=occurrence.index, palette="rocket", ax=ax, data = occurrence)
 
-    ax.set_ylabel('Beer')
-    ax.set_xlabel('Frequency')
+    ax.set_ylabel('')
+    ax.set_xlabel('Amount Drank')
     ax.set_title('Most Drunk Beers');
 
     plt.tight_layout()
@@ -183,7 +183,7 @@ def rating_frequency(beers):
     pal = sns.color_palette("rocket", len(ratings))
     rank = ratings[0].values.argsort().argsort()
     sns.barplot(x=ratings.index, y=0, palette= np.array(pal[::-1])[rank], ax=ax, data = ratings)
-    ax.set_ylabel('Frequency');
+    ax.set_ylabel('# of Beers');
     ax.set_xlabel('Rating')
     ax.set_title('Rating Histogram')
 
@@ -198,18 +198,18 @@ def style_frequency(beers):
 
     # group data by style, count occurence, sort by occurence
     occurence = pd.DataFrame(beers.groupby('style').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)
-    # keep all styles with more than 5 occurences
-    occurence = occurence[occurence['Frequency'] > 5]
+    # keep top 10 styles
+    occurence = occurence.head(10)
     # plot
     sns.barplot(x='Frequency', y=occurence.index, palette="rocket", ax=ax, data = occurence)
     
-    ax.set_ylabel('Frequency');
+    ax.set_ylabel('# Beers Drank');
     ax.set_ylabel('Beer Style');
-    ax.set_title('Most Drunk Styles (>5)')
+    ax.set_title('Top 10 Beer Styles')
 
     plt.tight_layout()
     
-    plt.savefig(SAVE + 'Style_frequency.png', dpi = 300)
+    plt.savefig(SAVE + 'style_frequency.png', dpi = 300)
 
 def ABV_frequency(beers):
     '''
@@ -223,14 +223,14 @@ def ABV_frequency(beers):
     # plot histogram    
     sns.distplot(a= abvs, ax=ax, kde=False)
     
-    ax.set_xlabel('ABV')
-    ax.set_ylabel('Frequency')
+    ax.set_xlabel('ABV %')
+    ax.set_ylabel('# of Beers')
     ax.set_title('ABV Histogram');
 
     plt.tight_layout()
     plt.savefig(SAVE + 'ABV_frequency.png', dpi = 300)
 
-def brewery_information(beers):
+def location_information(beers):
     '''
     brewing information 
     '''
@@ -247,7 +247,7 @@ def brewery_information(beers):
     state = pd.DataFrame(beers.groupby('brewery_state').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)[0:15]
     sns.barplot(x = 'Frequency', y = state.index, data = state, ax = axes[0,1], palette = 'rocket')
     
-    country = pd.DataFrame(beers.groupby('brewery_country').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)
+    country = pd.DataFrame(beers.groupby('brewery_country').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)[0:15]
     sns.barplot(x = 'Frequency', y = country.index, data = country, ax = axes[1,1], palette = 'rocket')
 
     axes[0,1].set_title('States')
@@ -256,7 +256,7 @@ def brewery_information(beers):
     axes[1,1].set_title('Countries')
     axes[1,1].set_xscale('log')
     
-    axes[0,1].set_ylabel('Frequency');
+    axes[0,1].set_xlabel('');
     axes[0,0].set_xlabel('');
     axes[1,0].set_xlabel('');
     axes[1,1].set_xlabel('');
@@ -265,7 +265,7 @@ def brewery_information(beers):
         ax.set_ylabel('');
         
     plt.tight_layout()
-    plt.savefig(SAVE + 'brewery_info.png', dpi = 300)
+    plt.savefig(SAVE + 'location_info.png', dpi = 300)
 
 def badges_per_checkin(beers):
     '''
@@ -427,8 +427,8 @@ def inter_drink_time(beers, unique):
     sns.distplot(a=total_seconds_iet, kde = False, bins=bins, label = 'All Beers', ax = ax)
     sns.distplot(a=unique_seconds_iet, kde = False, bins=bins, label = 'Unique Beers',ax = ax)
     
-    ax.set_ylabel('Frequency')
-    ax.set_xlabel('Time')
+    ax.set_ylabel('# Beers Drank')
+    ax.set_xlabel('Time in Between Each Drink')
     ax.set_title('Inter-Drink Time')
     # set ticks to the custom time labels
     ax.set_xticks(ticks)
@@ -468,6 +468,7 @@ def time_to_badge(date_badges):
     plt.suptitle("");
     ax.set_title('Amount of Time to Level Up a Badge (> Level 10)')
     ax.set_xlabel('Days')
+    ax.set_xlabel('Badge Name')
 
 
     plt.tight_layout()
@@ -516,12 +517,12 @@ def common_venue_names(beers):
     venues = pd.DataFrame(beers.dropna().groupby('venue_name').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)[0:15]
 
     sns.barplot(x='Frequency', y=venues.index, palette="rocket", ax=ax, data = venues)
-    ax.set_ylabel('Frequency');
+    ax.set_xlabel('# of Checkins');
     ax.set_ylabel('Venue');
     ax.set_title('Most Frequented Venues')
 
     plt.tight_layout()
-    plt.savefig(SAVE + 'Venue_frequency.png', dpi = 300)
+    plt.savefig(SAVE + 'venue_frequency.png', dpi = 300)
 
 def common_venue_types(beers):
     fig, ax = plt.subplots(figsize = (8,8))
@@ -529,13 +530,13 @@ def common_venue_types(beers):
     venues = pd.DataFrame(beers.dropna().groupby('venue_type').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)
 
     sns.barplot(x='Frequency', y=venues.index, palette="rocket", ax=ax, data = venues)
-    ax.set_ylabel('Frequency');
     ax.set_ylabel('Venue Type');
+    ax.set_xlabel('# of Checkins');
     ax.set_title('Most Frequented Venues')
     ax.set_xscale('log')
 
     plt.tight_layout()
-    plt.savefig(SAVE + 'Venue_Type_frequency.png', dpi = 300)
+    plt.savefig(SAVE + 'venue_Type_frequency.png', dpi = 300)
 
 def venue_heatmap(venue_locations):
     # get coordinates
@@ -577,19 +578,20 @@ def brewery_rating(beers):
     # initialize plot
     fig, ax = plt.subplots(figsize = (10,12))
 
-    # group by size, keep breweries with more than 5 beers
+    # group by size, keep breweries with top half of the 
     occurences = beers.groupby('brewery_name').size()
-    to_keep = occurences[occurences > 5].index
+    quantile = int(occurences.quantile(0.90))
+    to_keep = occurences[occurences > quantile].index
 
     # sort by mean rating
     ratings = pd.DataFrame(beers[beers['brewery_name'].isin(to_keep)].groupby('brewery_name')['rating'].apply(np.mean)).sort_values(by=['rating'], ascending = False)
-    
+
     # plot
     sns.barplot(x='rating', y=ratings.index, palette= 'rocket', data = ratings, ax = ax)
 
     ax.set_xlabel('Rating')
     ax.set_ylabel('Brewery');
-    ax.set_title('Brewery Rating')
+    ax.set_title('Brewery Rating (> {} Checkins)'.format(quantile)) 
     
     plt.tight_layout()
     plt.savefig(SAVE + 'brewery_ratings.png', dpi = 300)
@@ -600,14 +602,14 @@ def brewery_state(beers):
 
     fig = go.Figure(data=go.Choropleth(
         locations=states.index, # Spatial coordinates
-        z = np.log(states['Frequency'].astype(float)), # Data to be color-coded
+        z = np.log10(states['Frequency'].astype(float)), # Data to be color-coded
         locationmode = 'USA-states', # set of locations match entries in `locations`
         colorscale = 'Blues',
         colorbar_title = "Frequency",
     ))
 
     fig.update_layout(
-        title_text = 'Brewery State Frequency (log)',
+        title_text = 'Brewery State Frequency (log10)',
         geo_scope='usa',
         autosize=False,
         width=1000,
@@ -629,7 +631,7 @@ def brewery_country(beers):
     ))
 
     fig.update_layout(
-        title_text = 'Brewery Country Frequency (log)',
+        title_text = 'Brewery Country Frequency',
         geo_scope='world',
         autosize=False,
         width=1000,
@@ -791,7 +793,7 @@ def ave_unique_rating(unique):
     plt.tight_layout()
     plt.savefig(SAVE + 'unique_beer_rating_time.png', dpi = 300, bbox_inches='tight',bbox_extra_artists=[title])
 
-def unique_rating_day_of_wekk(unique):
+def unique_rating_day_of_week(unique):
     '''
     unique beer rating by day
     '''
@@ -807,7 +809,7 @@ def unique_rating_day_of_wekk(unique):
     # plot
     sns.barplot(x=occurrence.index, y=0, palette=np.array(pal[::-1])[rank], ax=ax, data = occurrence)
 
-    ax.set_ylabel('Unique Beer Count')
+    ax.set_ylabel('# of Unique Beers')
     ax.set_xlabel('Day of Week')
     ax.set_title('Unique Beer Count by Day of Week');
 
@@ -870,14 +872,16 @@ def badge_pdf(single_badges, level_badges, badge_urls):
     
 
 if __name__ == '__main__':
+    print('Cleaning Data')
     beers, date_badges, level_badges, single_badges, brewery_locations, venue_locations, badge_urls = read_data()
     unique = read_unique_beer_data()
 
+    print('Making Visualization')
     most_drunk_beers(beers)
     rating_frequency(beers)
     ABV_frequency(beers)
     style_frequency(beers)
-    brewery_information(beers)
+    location_information(beers)
     badges_per_checkin(beers)
     beer_style_by_rating(beers)
     beer_style_by_abv(beers)
@@ -893,7 +897,7 @@ if __name__ == '__main__':
     cumulative(beers, unique)
     ave_unique_counts(unique)
     ave_unique_rating(unique)
-    unique_rating_day_of_wekk(unique)
+    unique_rating_day_of_week(unique)
     brewery_state(beers)
     brewery_country(beers)
     badge_pdf(single_badges, level_badges, badge_urls)
