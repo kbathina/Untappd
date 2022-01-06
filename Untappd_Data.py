@@ -18,9 +18,33 @@ client_id  = data[1].split('= ')[1]
 client_secret = data[2].split('= ')[1]
 access_token = data[3].split('= ')[1]
 
+def get_first_data():
+    '''
+    download full data
+    '''
 
+    user = requests.get("https://api.untappd.com/v4/user/info/{}?client_id={}&client_secret={}".format(username,client_id,client_secret)) 
+    user_data = user.json()
+    total_checkins = user_data["response"]["user"]["stats"]["total_checkins"]
+    print("Total Checkins = {}".format(total_checkins))
 
-def get_main_data():
+    checkins_data = requests.get("https://api.untappd.com/v4/user/checkins/?access_token={}".format(access_token)).json()
+    append_data = checkins_data["response"]["checkins"]["items"]
+
+    while (len(append_data) < total_checkins):
+        max_id   = checkins_data["response"]["pagination"]["max_id"]
+        next_url = "https://api.untappd.com/v4/user/checkins/?max_id={}&access_token={}".format(max_id,access_token)
+        print("Downloading {} of {}".format(len(append_data),total_checkins))
+        checkins = requests.get(next_url)
+        checkins_data = checkins.json()
+        append_data.extend(checkins_data["response"]["checkins"]["items"])
+
+    with open("data/untappd_checkins.json", "w") as f:
+        json.dump(append_data, f)
+
+    return current_data
+
+def get_updated_data():
     '''
     download full data
     '''
@@ -29,7 +53,7 @@ def get_main_data():
 
     current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)\
 
-    checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token)
+    checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token={}".format(access_token))
 
     append_data = []
     checkins_data = checkins.json()
@@ -108,11 +132,9 @@ def update_bages(current_data):
 if __name__ == '__main__':
 
     if not os.path.exists('data/untappd_checkins.json'):
-        current_data = requests.get("https://api.untappd.com/v4/user/checkins/?access_token="+access_token).json()["response"]["checkins"]["items"]
-        with open("data/untappd_checkins.json", "w") as f:
-            json.dump(current_data, f)
+        current_data = get_first_data()
     else: 
-        current_data = get_main_data()
+        current_data = get_updated_data()
 
     update_bages(current_data)
 
