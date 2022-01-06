@@ -51,7 +51,7 @@ def get_updated_data():
     with open('data/untappd_checkins.json') as json_file: # read in data from untappd api
         current_data = json.load(json_file)
 
-    current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)\
+    current_time = datetime.strptime(current_data[0]['created_at'],'%a, %d %b %Y %H:%M:%S %z').replace(tzinfo=None)
 
     checkins = requests.get("https://api.untappd.com/v4/user/checkins/?access_token={}".format(access_token))
 
@@ -66,9 +66,9 @@ def get_updated_data():
     count = 0
     while new_time > current_time:
         count += 1
-        if count % 10 == 0: print(str(count) + ' checkins')
+        if count % 10 == 0: print('{} checkins'.format(count))
         max_id   = checkins_data["response"]["pagination"]["max_id"]
-        next_url = "https://api.untappd.com/v4/user/checkins/?max_id=" + str(max_id) + "&access_token="+access_token
+        next_url = "https://api.untappd.com/v4/user/checkins/?max_id={}&access_token={}".format(max_id,access_token)
         checkins = requests.get(next_url)
         checkins_data = checkins.json()
         for checkin in checkins_data["response"]["checkins"]["items"]:
