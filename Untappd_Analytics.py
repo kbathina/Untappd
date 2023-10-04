@@ -194,7 +194,7 @@ def style_frequency(beers):
     '''
     style frequency 
     '''
-    fig, ax = plt.subplots(figsize = (8,20))
+    fig, ax = plt.subplots(figsize = (8,10))
 
     # group data by style, count occurence, sort by occurence
     occurence = pd.DataFrame(beers.groupby('style').size(), columns = ['Frequency']).sort_values('Frequency', ascending=False)
@@ -276,7 +276,7 @@ def badges_per_checkin(beers):
 
     # group number of badges per checkin and count the number of occurences
     # store as a zipped list
-    zipped = list(beers.groupby('number_badges').size().iteritems())
+    zipped = list(beers.groupby('number_badges').size().items())
     # sort list into readable order
     m = range(len(zipped))
     t = list(zip(m[0:], m[::-1]))
@@ -317,7 +317,7 @@ def beer_style_by_rating(beers):
     abv_beers = style_amount_filter[style_amount_filter['style'].isin(abvs_to_keep)]
 
     # sort plot by top 15 and then bottom 15
-    meds = abv_beers.groupby('style').apply(np.mean).sort_values(by = 'rating', ascending = False)
+    meds = abv_beers.groupby('style')['rating'].apply(np.mean).sort_values(ascending = False)
     abv_beers['style'] = pd.Categorical(abv_beers['style'], meds.index)
     abv_beers.sort_values("style", inplace = True)
     sns.boxplot(x="style", y="rating", data=abv_beers, ax = ax, palette = 'rocket')
@@ -372,7 +372,7 @@ def beer_style_by_abv(beers):
     abv_beers = style_amount_filter[style_amount_filter['style'].isin(abvs_to_keep)]
 
     # sort plot by top 15 and then bottom 15
-    meds = abv_beers.groupby('style').apply(np.mean).sort_values(by = 'abv', ascending = False)
+    meds = abv_beers.groupby('style')['abv'].apply(np.mean).sort_values(ascending = False)
     abv_beers['style'] = pd.Categorical(abv_beers['style'], meds.index)
     abv_beers.sort_values("style", inplace = True)
     sns.boxplot(x="style", y="abv", data=abv_beers, ax = ax, palette = 'rocket')
@@ -416,8 +416,8 @@ def inter_drink_time(beers, unique):
     unique_seconds_iet = (dates - dates.shift(-1))[:-1].apply(lambda x: x.total_seconds())
     total_seconds_iet = (beers['date_GMT'] - beers['date_GMT'].shift(-1))[:-1].apply(lambda x: x.total_seconds())
     # make lists of time labels and number of seconds in each time label
-    ticks = [3600, 86400, 259200, 432000, 604800]
-    labels =  ["Hour",'1 Day', '3 Days','5 Days', 'Week']
+    ticks = [3600, 86400, 259200, 432000, 604800, 2419200]
+    labels =  ["Hour",'1 Day', '3 Days','5 Days', 'Week', '1 Month']
 
     maxs  = max(max(unique_seconds_iet.values),max(total_seconds_iet.values))
     mins  = min(min(unique_seconds_iet.values),min(total_seconds_iet.values))
@@ -439,18 +439,18 @@ def inter_drink_time(beers, unique):
     plt.tight_layout()
     plt.savefig(SAVE + 'inter_drink_time.png', dpi = 300)
 
-def time_to_badge(date_badges):
+def time_to_badge(date_badges, level):
 
     fig, ax = plt.subplots(figsize = (18,10));
 
-    # for each badge of at least level 10, 
+    # for each badge of at least the level provided, 
     # find the difference in times of levelling up and convert from seconds to days.
     # store as a list of lists. 
     # flatten list of lists and turn into pandas datafrme
     badges_iet = pd.DataFrame(
         [ind for flatten in 
          [[[x,(t - s).total_seconds() / (60 * 60 * 24)] for s, t in zip(date_badges[x], date_badges[x][1:])] 
-          for x in date_badges.keys() if len(date_badges[x]) > 10]
+          for x in date_badges.keys() if len(date_badges[x]) > level]
          for ind in flatten],
         columns = ['Badge','Time']
     )
@@ -460,15 +460,15 @@ def time_to_badge(date_badges):
     badges_iet[badges_iet['Badge'].isin(badges_to_keep)]
     
     # sort plot by fastest obtained badges
-    meds = badges_iet.groupby('Badge').apply(np.mean).sort_values(by = 'Time', ascending = True)
+    meds = badges_iet.groupby('Badge').apply(np.mean).sort_values(ascending = True)
     badges_iet['Badge'] = pd.Categorical(badges_iet['Badge'], meds.index)
     badges_iet.sort_values("Badge", inplace = True)
     sns.boxplot(x="Time", y="Badge", data=badges_iet, ax = ax, palette = 'rocket_r')
 
     plt.suptitle("");
-    ax.set_title('Amount of Time to Level Up a Badge (> Level 10)')
+    ax.set_title('Amount of Time to Level Up a Badge')
     ax.set_xlabel('Days')
-    ax.set_xlabel('Badge Name')
+    ax.set_ylabel('Badge Name')
 
 
     plt.tight_layout()
@@ -573,14 +573,14 @@ def venue_popup(venue_locations, beers):
 
     m.save(outfile= SAVE + "venue_popup_map.html")
 
-def brewery_rating(beers):
+def brewery_rating(beers, quantile):
 
     # initialize plot
     fig, ax = plt.subplots(figsize = (10,12))
 
-    # group by size, keep breweries with top half of the 
+    # group by size, keep breweries with top breweries
     occurences = beers.groupby('brewery_name').size()
-    quantile = int(occurences.quantile(0.90))
+    quantile = int(occurences.quantile(quantile))
     to_keep = occurences[occurences > quantile].index
 
     # sort by mean rating
@@ -886,14 +886,14 @@ if __name__ == '__main__':
     beer_style_by_rating(beers)
     beer_style_by_abv(beers)
     inter_drink_time(beers, unique)
-    time_to_badge(date_badges)
+    time_to_badge(date_badges, level = 50)
     brewery_heatmap(brewery_locations)
     brewery_popup(brewery_locations, beers)
     common_venue_names(beers)
     common_venue_types(beers)
     venue_heatmap(venue_locations)
     venue_popup(venue_locations, beers)
-    brewery_rating(beers)
+    brewery_rating(beers, quantile = 0.95)
     cumulative(beers, unique)
     ave_unique_counts(unique)
     ave_unique_rating(unique)
